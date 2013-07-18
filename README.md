@@ -12,7 +12,9 @@ First you need to create a database with extracted keypoints and features of an 
 To do this you use build-imgdupl-db utility. For a while invocation is very simple and basically
 looks like:
 
+<pre>
   $ ./build-imgdupl-db <directory> <database>
+</pre>
 
 Where directory contains images and database is a file in filesystem. Utility recursively walks
 through directory tree and fills database with corresponding data. We use SQLite engine for data
@@ -20,16 +22,22 @@ management.
 
 Example:
 
+<pre>
   $ ./build-imgdupl-db /mnt/disk/Photos/Party/ /tmp/images.db
+</pre>
 
 ### Run an imgdupl process
 
 Example:
 
+<pre>
   $ ./imgdupl --db-file /tmp/images.db --config imgdupl.cfg
+</pre>
 
 ### Usage from a command line
 
+<pre>
   $ curl --data-binary "@file.jpg" -H "Content-Type: application/octet-stream" -X POST http://127.0.0.1:9090/check
+</pre>
 
 Here file.jpg is a name of a file on the disk, i.e. /full/path/to/image_001.jpg.
