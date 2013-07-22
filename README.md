@@ -13,7 +13,7 @@ To do this you use build-imgdupl-db utility. For a while invocation is very simp
 looks like:
 
 <pre>
-  $ ./build-imgdupl-db <directory> <database>
+  $ ./build-imgdupl-db directory database
 </pre>
 
 Where directory contains images and database is a file in filesystem. Utility recursively walks
