@@ -223,12 +223,12 @@ process_directory(Ctx &ctx, std::string directory)
     bfs::path root(directory);
     bfs::recursive_directory_iterator cur_it(root), end_it;
 
-    bool status;
-
     for (; cur_it != end_it; ++cur_it) {
-        status = process_file(ctx, cur_it->path());
-        if (status == false) {
-            std::cerr << "failed to process " << cur_it->path() << std::endl;
+        if (bfs::is_regular_file(cur_it->path().string())) {
+            bool status = process_file(ctx, cur_it->path());
+            if (status == false) {
+                std::cerr << "failed to process " << cur_it->path() << std::endl;
+            }
         }
     }
 }
