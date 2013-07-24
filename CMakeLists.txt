@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(imgdupl)
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
+
 include_directories(${imgdupl_SOURCE_DIR}/)
 
 include(FindThreads)
@@ -22,9 +24,15 @@ endif()
 
 find_package(Boost COMPONENTS thread filesystem serialization iostreams program_options system)
 
+find_package(Yajl REQUIRED)
+if (NOT YAJL_FOUND)
+    message(FATAL_ERROR "Couldn't find libyajl")
+endif()
+
 include_directories(${LIBOPENCV_INCLUDE_DIRS})
 include_directories(${SQLITE3_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${YAJL_INCLUDE_DIRS})
 
 link_directories(${LIBOPENCV_LIBRARY_DIRS})
 
@@ -47,16 +55,17 @@ add_library(imgdupl-static STATIC ${CHECKER_SRCS})
 set_target_properties(imgdupl-static PROPERTIES OUTPUT_NAME imgdupl)
 set_target_properties(imgdupl-static PROPERTIES LINKER_LANGUAGE CXX)
 
-set(CHECKER_LIBS
+set(IMGDUPL_LIBS
     imgdupl-static
     ${LIBOPENCV_LDFLAGS}
     ${Boost_LIBRARIES}
     ${SQLITE3_LIBRARIES}
+    ${YAJL_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
 add_executable(imgdupl ${imgdupl_SOURCE_DIR}/imgdupl.cpp)
-target_link_libraries(imgdupl ${CHECKER_LIBS})
+target_link_libraries(imgdupl ${IMGDUPL_LIBS})
 
 set(BUILD_DB_LIBS
     imgdupl-static

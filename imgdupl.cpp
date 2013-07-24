@@ -24,6 +24,7 @@
 #include "exc.hpp"
 #include "serialize.hpp"
 #include "data_types.hpp"
+#include "json_writer.hpp"
 
 using namespace imgdupl;
 
@@ -116,15 +117,34 @@ void
 send_response(struct mg_connection *conn, bool operation_status, bool check_status,
               const std::string &image_path, const char *custom_msg = NULL)
 {
-    char   content[1024];
+    char   content[4096];
     size_t content_length;
 
+    yajl_gen json_generator = yajl_gen_alloc(NULL);
+
     if (operation_status) {
-        if (check_status == true) {
-            content_length = snprintf(content, sizeof(content), "Found: %s\n", image_path.c_str());
-        } else {
-            content_length = snprintf(content, sizeof(content), "Not found\n");
+        // To form a valid JSON JsonMapWriter's destructor must be called,
+        // so create separate scope for it
+        {
+            JsonMapWriter writer(json_generator);
+            if (check_status == true) {
+                writer.write("found", 1);
+                writer.write("path", image_path);
+            } else {
+                writer.write("found", 0);
+            }
         }
+
+        const unsigned char *buf;
+        size_t               size;
+
+        yajl_gen_status status = yajl_gen_get_buf(json_generator, &buf, &size);
+        THROW_EXC_IF_FAILED(status == yajl_gen_status_ok,
+            "YAJL generator failed, error code: %u", status);
+
+        content_length = std::min(size, sizeof(content));
+        memcpy(content, buf, content_length);
+        
         mg_printf(conn,
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/plain\r\n"
@@ -149,6 +169,8 @@ send_response(struct mg_connection *conn, bool operation_status, bool check_stat
             content
         );
     }
+
+    yajl_gen_free(json_generator);
 }
 
 void
