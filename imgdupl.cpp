@@ -147,7 +147,7 @@ send_response(struct mg_connection *conn, bool operation_status, bool check_stat
         
         mg_printf(conn,
             "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n"
+            "Content-Type: application/json\r\n"
             "Content-Length: %zu\r\n"
             "\r\n"
             "%s",
