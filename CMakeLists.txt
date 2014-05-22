@@ -22,7 +22,7 @@ if (NOT SQLITE3_FOUND)
     message(FATAL_ERROR "Couldn't find sqlite3")
 endif()
 
-find_package(Boost COMPONENTS thread filesystem serialization iostreams program_options system)
+find_package(Boost REQUIRED COMPONENTS thread filesystem serialization iostreams program_options system)
 
 find_package(Yajl REQUIRED)
 if (NOT YAJL_FOUND)
