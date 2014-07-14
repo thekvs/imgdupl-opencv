@@ -64,9 +64,7 @@ public:
 
     ~JsonMapWriter()
     {
-        status = yajl_gen_map_close(g);
-        THROW_EXC_IF_FAILED(status == yajl_gen_status_ok,
-            "YAJL generator failed, error code: %u", status);
+        yajl_gen_map_close(g);
     }
 };
 
@@ -83,9 +81,7 @@ public:
 
     ~JsonArrayWriter()
     {
-        status = yajl_gen_array_close(g);
-        THROW_EXC_IF_FAILED(status == yajl_gen_status_ok,
-            "YAJL generator failed, error code: %u", status);
+        yajl_gen_array_close(g);
     }
 };
  
