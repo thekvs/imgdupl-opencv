@@ -14,11 +14,6 @@ if (NOT PKG_CONFIG_FOUND)
     message(FATAL_ERROR, "Couldn't find pkg-config")
 endif()
 
-pkg_check_modules(LIBOPENCV QUIET opencv)
-if (NOT LIBOPENCV_FOUND)
-    message(FATAL_ERROR "Couldn't find OpenCV")
-endif()
-
 pkg_check_modules(SQLITE3 QUIET sqlite3)
 if (NOT SQLITE3_FOUND)
     message(FATAL_ERROR "Couldn't find sqlite3")
@@ -51,6 +46,37 @@ ExternalProject_Add(
 INCLUDE_DIRECTORIES(${yajl_PREFIX}/include)
 SET(YAJL_LIBRARIES ${yajl_PREFIX}/lib/libyajl_s.a)
 
+set(opencv_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/external/opencv)
+ExternalProject_Add(
+    opencv
+    PREFIX ${opencv_PREFIX}
+    URL "https://github.com/Itseez/opencv/archive/2.4.9.tar.gz"
+    URL_MD5 "cc0a8307403ff471f554197401ec0eb9"
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${opencv_PREFIX} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_DOCS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DBUILD_opencv_legacy=ON -DPYTHON_EXECUTABLE=NO -DPYTHON_USE_NUMPY=OFF -DWITH_FFMPEG=OFF 
+)
+ExternalProject_Get_Property(opencv install_dir)
+include_directories(${install_dir}/include)
+
+set(OpenCV_LIBS
+    ${install_dir}/lib/libopencv_calib3d.so
+    ${install_dir}/lib/libopencv_highgui.so
+    ${install_dir}/lib/libopencv_photo.so
+    ${install_dir}/lib/libopencv_contrib.so
+    ${install_dir}/lib/libopencv_imgproc.so
+    ${install_dir}/lib/libopencv_stitching.so
+    ${install_dir}/lib/libopencv_core.so
+    ${install_dir}/lib/libopencv_legacy.so
+    ${install_dir}/lib/libopencv_superres.so
+    ${install_dir}/lib/libopencv_features2d.so
+    ${install_dir}/lib/libopencv_ml.so
+    ${install_dir}/lib/libopencv_video.so
+    ${install_dir}/lib/libopencv_flann.so
+    ${install_dir}/lib/libopencv_nonfree.so
+    ${install_dir}/lib/libopencv_videostab.so
+    ${install_dir}/lib/libopencv_gpu.so
+    ${install_dir}/lib/libopencv_objdetect.so
+)
+
 set(CHECKER_SRCS
     ${imgdupl_SOURCE_DIR}/mongoose.c
     ${imgdupl_SOURCE_DIR}/searcher.cpp
@@ -59,16 +85,16 @@ set(CHECKER_SRCS
 add_definitions(-DNO_SSL)
 
 add_library(imgdupl-static STATIC ${CHECKER_SRCS})
-add_dependencies(imgdupl-static yajl)
+add_dependencies(imgdupl-static yajl opencv)
 set_target_properties(imgdupl-static PROPERTIES OUTPUT_NAME imgdupl)
 set_target_properties(imgdupl-static PROPERTIES LINKER_LANGUAGE CXX)
 
 set(IMGDUPL_LIBS
     imgdupl-static
-    ${LIBOPENCV_LDFLAGS}
     ${Boost_LIBRARIES}
     ${SQLITE3_LIBRARIES}
     ${YAJL_LIBRARIES}
+    ${OpenCV_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -77,9 +103,9 @@ target_link_libraries(imgdupl ${IMGDUPL_LIBS})
 
 set(BUILD_DB_LIBS
     imgdupl-static
-    ${LIBOPENCV_LDFLAGS}
     ${Boost_LIBRARIES}
     ${SQLITE3_LIBRARIES}
+    ${OpenCV_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -88,6 +114,5 @@ target_link_libraries(build-imgdupl-db ${BUILD_DB_LIBS})
 
 add_subdirectory(tests)
 
-install(PROGRAMS ${imgdupl_BINARY_DIR}/imgdupl DESTINATION bin/)
-install(PROGRAMS ${imgdupl_BINARY_DIR}/build-imgdupl-db DESTINATION bin/)
-
+# install(PROGRAMS ${imgdupl_BINARY_DIR}/imgdupl DESTINATION bin)
+# install(PROGRAMS ${imgdupl_BINARY_DIR}/build-imgdupl-db DESTINATION bin)
